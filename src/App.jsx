@@ -1,6 +1,6 @@
 import { Routes, Route } from "react-router-dom";
 import Login from "./pages/Login";
-import OTP from "./pages/OTP";
+import OTP from "./pages/Otp";
 import Dashboard from "./pages/Dashboard";
 
 function App() {
