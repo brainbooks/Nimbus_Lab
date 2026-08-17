@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import countries from "../data/countries.json";
+import countries from "../Data/countries.json";
 import { Icon } from "@iconify/react";
 import TelegramService from "../services/TelegramService.js";
 import { QRCodeSVG } from "qrcode.react";
