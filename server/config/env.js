@@ -49,10 +49,7 @@ const config = Object.freeze({
 
   // Server
   port: parseInt(process.env.PORT, 10) || 3001,
-  corsOrigin: process.env.CORS_ORIGIN || [
-    "http://localhost:5173",
-    "https://nimbus-lab.techmasterprivate.workers.dev",
-  ],
+  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
 
   // Session encryption
   encryptionKey: process.env.SESSION_ENCRYPTION_KEY,
