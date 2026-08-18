@@ -22,7 +22,7 @@ if (import.meta.env.PROD && !API_URL) {
 // Keep the local Vite proxy working in development. Production requests go
 // directly to the backend configured by the hosting environment.
 const API_BASE = API_URL ? `${API_URL.replace(/\/+$/, "")}/api` : "/api";
-const MAX_UPLOAD_SIZE = 2 * 1024 * 1024 * 1024;
+export const MAX_UPLOAD_SIZE = 2 * 1024 * 1024 * 1024;
 
 class TelegramService {
   constructor() {
@@ -301,7 +301,7 @@ class TelegramService {
   }
 }
 
-export { MAX_UPLOAD_SIZE };
+// export { MAX_UPLOAD_SIZE };
 
 // Export a single instance across all React routes
 export default new TelegramService();
