@@ -13,7 +13,15 @@
 //   Session: logout
 // ==================================================
 
-const API_BASE = "/api";
+const API_URL = import.meta.env.VITE_API_URL?.trim();
+
+if (import.meta.env.PROD && !API_URL) {
+  throw new Error("Missing VITE_API_URL environment variable");
+}
+
+// Keep the local Vite proxy working in development. Production requests go
+// directly to the backend configured by the hosting environment.
+const API_BASE = API_URL ? `${API_URL.replace(/\/+$/, "")}/api` : "/api";
 const MAX_UPLOAD_SIZE = 2 * 1024 * 1024 * 1024;
 
 class TelegramService {
@@ -38,13 +46,38 @@ class TelegramService {
     }
 
     const response = await fetch(`${API_BASE}${path}`, options);
-    const data = await response.json();
+    const contentType = response.headers.get("content-type") || "";
+    const responseText = await response.text();
+    let data = {};
 
-    if (!response.ok && !data.success) {
-      throw new Error(data.error || "Request failed.");
+    if (responseText && contentType.includes("application/json")) {
+      try {
+        data = JSON.parse(responseText);
+      } catch {
+        throw new Error(`Server returned invalid JSON (status ${response.status}).`);
+      }
+    }
+
+    if (!response.ok) {
+      throw new Error(data.error || `Request failed with status ${response.status}.`);
+    }
+
+    if (responseText && !contentType.includes("application/json")) {
+      throw new Error(`Server returned a non-JSON response (status ${response.status}).`);
     }
 
     return data;
+  }
+
+  _withSessionToken(url) {
+    const separator = url.includes("?") ? "&" : "?";
+    return `${url}${separator}token=${encodeURIComponent(this.sessionToken)}`;
+  }
+
+  _resolveApiUrl(url) {
+    if (/^https?:\/\//i.test(url)) return url;
+    if (url.startsWith("/api/")) return `${API_BASE}${url.slice(4)}`;
+    return `${API_BASE}${url.startsWith("/") ? "" : "/"}${url}`;
   }
 
   _saveToken(token) {
@@ -129,7 +162,7 @@ class TelegramService {
    */
   getAvatarUrl() {
     if (!this.sessionToken) return null;
-    return `/api/user/avatar?token=${this.sessionToken}`;
+    return this._withSessionToken(`${API_BASE}/user/avatar`);
   }
 
   // ==================================================
@@ -155,9 +188,9 @@ class TelegramService {
 
     return data.files.map(file => {
       if (file.thumbnail) {
-        file.thumbnail = `${file.thumbnail}?token=${this.sessionToken}`;
+        file.thumbnail = this._withSessionToken(this._resolveApiUrl(file.thumbnail));
       }
-      file.url = `/api/files/download/${file.messageId}?token=${this.sessionToken}`;
+      file.url = this._withSessionToken(`${API_BASE}/files/download/${file.messageId}`);
       return file;
     });
   }
@@ -202,9 +235,13 @@ class TelegramService {
 
     const uploadedFile = data.file;
     if (uploadedFile.thumbnail) {
-      uploadedFile.thumbnail = `${uploadedFile.thumbnail}?token=${this.sessionToken}`;
+      uploadedFile.thumbnail = this._withSessionToken(
+        this._resolveApiUrl(uploadedFile.thumbnail),
+      );
     }
-    uploadedFile.url = `/api/files/download/${uploadedFile.messageId}?token=${this.sessionToken}`;
+    uploadedFile.url = this._withSessionToken(
+      `${API_BASE}/files/download/${uploadedFile.messageId}`,
+    );
     return uploadedFile;
   }
 
@@ -218,7 +255,7 @@ class TelegramService {
   }
 
   getThumbnailUrl(messageId) {
-    return `/api/files/thumbnail/${messageId}?token=${this.sessionToken}`;
+    return this._withSessionToken(`${API_BASE}/files/thumbnail/${messageId}`);
   }
 
   // ==================================================
