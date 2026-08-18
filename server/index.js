@@ -46,7 +46,7 @@ app.use(
     origin: config.corsOrigin,
     methods: ["GET", "POST", "DELETE"],
     allowedHeaders: ["Content-Type", "x-session-token"],
-    credentials: true
+    credentials: true,
   }),
 );
 
