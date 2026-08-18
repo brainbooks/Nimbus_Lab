@@ -24,15 +24,21 @@ const required = ["API_ID", "API_HASH", "SESSION_ENCRYPTION_KEY"];
 for (const key of required) {
   if (!process.env[key]) {
     console.error(`\n❌  Missing required environment variable: ${key}`);
-    console.error(`    Copy server/.env.example to server/.env and fill in all values.\n`);
+    console.error(
+      `    Copy server/.env.example to server/.env and fill in all values.\n`,
+    );
     process.exit(1);
   }
 }
 
 // Validate encryption key format (must be 64 hex chars = 32 bytes = 256 bits)
 if (!/^[0-9a-fA-F]{64}$/.test(process.env.SESSION_ENCRYPTION_KEY)) {
-  console.error(`\n❌  SESSION_ENCRYPTION_KEY must be exactly 64 hex characters (256 bits).`);
-  console.error(`    Generate one with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"\n`);
+  console.error(
+    `\n❌  SESSION_ENCRYPTION_KEY must be exactly 64 hex characters (256 bits).`,
+  );
+  console.error(
+    `    Generate one with: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"\n`,
+  );
   process.exit(1);
 }
 
@@ -43,13 +49,17 @@ const config = Object.freeze({
 
   // Server
   port: parseInt(process.env.PORT, 10) || 3001,
-  corsOrigin: process.env.CORS_ORIGIN || "http://localhost:5173",
+  corsOrigin: process.env.CORS_ORIGIN || [
+    "http://localhost:5173",
+    "https://nimbus-lab.techmasterprivate.workers.dev",
+  ],
 
   // Session encryption
   encryptionKey: process.env.SESSION_ENCRYPTION_KEY,
 
   // Client lifecycle — idle timeout before auto-disconnect (milliseconds)
-  clientIdleTimeoutMs: (parseInt(process.env.CLIENT_IDLE_TIMEOUT_MINUTES, 10) || 30) * 60 * 1000,
+  clientIdleTimeoutMs:
+    (parseInt(process.env.CLIENT_IDLE_TIMEOUT_MINUTES, 10) || 30) * 60 * 1000,
 });
 
 export default config;
