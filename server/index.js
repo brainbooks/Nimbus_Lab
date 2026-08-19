@@ -1,3 +1,8 @@
+import dns from "node:dns";
+// Force Google/Cloudflare public DNS and prioritize IPv4 for Telegram DC lookups
+dns.setDefaultResultOrder("ipv4first");
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
+
 import express from "express";
 import cors from "cors";
 import config from "./config/env.js";
